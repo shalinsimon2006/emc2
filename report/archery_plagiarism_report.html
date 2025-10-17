@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Plagiarism Report · 1 2 3 4 5 6 7</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    /* minimal inline fallback if stylesheet missing */
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; margin: 24px; color: #0f172a; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    header h1 { margin: 0; font-size: 1.6rem; }
+    header .meta { color: #475569; font-size: .9rem; }
+    .kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0 24px; }
+    .card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; background: #fff; }
+    .card h3 { margin: 0 0 8px; font-size: 1rem; color: #0f172a; }
+    .highlight { background: #fff7ed; border-left: 4px solid #f59e0b; padding: 10px 12px; border-radius: 6px; }
+    .risk { font-size: 2rem; font-weight: 700; }
+    section { margin: 28px 0; }
+    table.compact { width: 100%; border-collapse: collapse; }
+    table.compact th, table.compact td { border-bottom: 1px solid #e2e8f0; padding: 8px 6px; text-align: left; }
+    .right { text-align: right; }
+    ol.flagged { padding-left: 18px; }
+    .badge { display: inline-block; background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; border-radius: 999px; padding: 2px 8px; margin-right: 6px; font-size: .8rem; }
+    footer { margin-top: 40px; color: #64748b; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Plagiarism-style Heuristic Report</h1>
+      <div class="meta">File: Adaptive_Power_Optimization_for_Multi_Target_Archery_Simulation (6) (1).pdf · Title guess: 1 2 3 4 5 6 7</div>
+    </header>
+
+    <section class="highlight card">
+      <h3>Overall heuristic risk</h3>
+      <div class="risk">15/100</div>
+      <p>This is an internal similarity risk score based on long uncited sentences and citation presence. It is <strong>not</strong> a web similarity check.</p>
+    </section>
+
+    <div class="kpi">
+      <div class="card"><h3>Words</h3><div>7</div></div>
+      <div class="card"><h3>Unique words</h3><div>7 (TTR 1.00)</div></div>
+      <div class="card"><h3>Sentences</h3><div>1 (avg 7.0/sent.)</div></div>
+    </div>
+
+    <section class="card">
+      <h3>Citation signals</h3>
+      <table class="compact">
+        <thead><tr><th>Type</th><th class=right>Count</th></tr></thead>
+        <tbody>
+          <tr><td>Bracket-number citations [1], [2,3]</td><td class=right>0</td></tr>
+          <tr><td>Author-year citations (Smith, 2020; Doe et al., 2021)</td><td class=right>0</td></tr>
+          <tr><td>URL/DOI citations</td><td class=right>0</td></tr>
+          <tr><td><strong>References/Bibliography section present</strong></td><td class=right>No</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h3>Repeated phrases (trigrams)</h3>
+      <p>No repeated n-grams above threshold.</p>
+    </section>
+
+    <section class="card">
+      <h3>Repeated phrases (five-grams)</h3>
+      <p>No repeated n-grams above threshold.</p>
+    </section>
+
+    <section class="card">
+      <h3>Long uncited sentences</h3>
+      <p>No long uncited sentences detected.</p>
+    </section>
+
+    <section class="card">
+      <h3>Long quotes (>= 40 words)</h3>
+      <p>No long quotes (>= 40 words) detected.</p>
+    </section>
+
+    <section class="card">
+      <h3>Notes</h3>
+      <ul><li>Used PyMuPDF text extraction</li><li>Document contains images on pages (count≈7); may be scanned</li><li>Used pdfminer text extraction</li><li>Used pypdf text extraction</li><li>OCR not available (tesseract not installed); output may be partial</li><li>No References/Bibliography section detected.</li><li>No inline citation patterns detected.</li></ul>
+    </section>
+
+    <footer>
+      Generated locally without external source comparison. Use a web plagiarism checker for definitive results.
+    </footer>
+  </div>
+</body>
+</html>
