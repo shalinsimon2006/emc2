@@ -34,7 +34,8 @@ from typing import Dict, List, Tuple, Iterable, Set
 
 
 @dataclasses.dataclass
-class Document:\n    path: str
+class Document:
+    path: str
     name: str
     text: str
     tokens: List[str]
@@ -77,15 +78,9 @@ def read_text(path: str) -> str:
 
 
 def normalize(text: str) -> str:
-    # Lower, remove/control punctuation to whitespace, collapse spaces
+    # Lowercase and replace non-alphanumeric with spaces, then collapse whitespace.
     lowered = text.lower()
-    # Replace non-alphanumeric (keep unicode letters/numbers) with space
-    normalized = re.sub(r"[^\p{L}\p{N}]+", " ", lowered)
-    # The above regex with \p classes is not supported by default Python re.
-    # Fallback: approximate using \w (letters, digits, underscore) + non-ascii letters
-    # We'll do a two-pass: first keep word chars, digits, and unicode letters using category property via regex range.
-    # Because Python's 're' lacks \p{L}, use a broader replacement approach:
-    normalized = re.sub(r"[^\w\d]+", " ", lowered, flags=re.UNICODE)
+    normalized = ''.join(ch if ch.isalnum() else ' ' for ch in lowered)
     normalized = re.sub(r"\s+", " ", normalized).strip()
     return normalized
 

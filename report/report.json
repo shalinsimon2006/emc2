@@ -1,0 +1,96 @@
+{
+  "generated_at": "2025-10-17T04:17:57.792005Z",
+  "num_files": 3,
+  "files": [
+    {
+      "path": "/workspace/samples/adaptive_archery_1.txt",
+      "name": "adaptive_archery_1.txt",
+      "num_tokens": 28,
+      "num_ngrams": 26
+    },
+    {
+      "path": "/workspace/samples/adaptive_archery_2.txt",
+      "name": "adaptive_archery_2.txt",
+      "num_tokens": 24,
+      "num_ngrams": 22
+    },
+    {
+      "path": "/workspace/samples/other.txt",
+      "name": "other.txt",
+      "num_tokens": 18,
+      "num_ngrams": 16
+    }
+  ],
+  "pairs": [
+    {
+      "file_a": "/workspace/samples/adaptive_archery_1.txt",
+      "file_b": "/workspace/samples/adaptive_archery_2.txt",
+      "cosine": 0.5547,
+      "jaccard": 0.0,
+      "combined": 0.5547,
+      "overlap_ngrams": [],
+      "overlap_tokens": [
+        [
+          "and",
+          2
+        ],
+        [
+          "across",
+          1
+        ],
+        [
+          "adaptive",
+          1
+        ],
+        [
+          "archery",
+          1
+        ],
+        [
+          "distances",
+          1
+        ],
+        [
+          "draw",
+          1
+        ],
+        [
+          "drills",
+          1
+        ],
+        [
+          "dynamic",
+          1
+        ]
+      ]
+    },
+    {
+      "file_a": "/workspace/samples/adaptive_archery_2.txt",
+      "file_b": "/workspace/samples/other.txt",
+      "cosine": 0.09245,
+      "jaccard": 0.0,
+      "combined": 0.09245,
+      "overlap_ngrams": [],
+      "overlap_tokens": [
+        [
+          "and",
+          1
+        ]
+      ]
+    },
+    {
+      "file_a": "/workspace/samples/adaptive_archery_1.txt",
+      "file_b": "/workspace/samples/other.txt",
+      "cosine": 0.083333,
+      "jaccard": 0.0,
+      "combined": 0.083333,
+      "overlap_ngrams": [],
+      "overlap_tokens": [
+        [
+          "and",
+          1
+        ]
+      ]
+    }
+  ]
+}
