@@ -1,1 +1,63 @@
- 
+:root {
+  --bg: #0b1020;
+  --panel: #0f172a;
+  --panel-border: #1e293b;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #8b5cf6;
+  --accent-2: #22d3ee;
+  --warn: #f59e0b;
+  --ok: #22c55e;
+}
+
+/* Global */
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: radial-gradient(1200px 800px at 20% -10%, #172554 0%, transparent 60%),
+              radial-gradient(1200px 800px at 120% 10%, #0b3b47 0%, transparent 50%),
+              var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, Segoe UI, Roboto, Ubuntu, Cantarell, Helvetica Neue, Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container { max-width: 1100px; margin: 28px auto; padding: 0 18px; }
+
+/* Header */
+header h1 { font-size: 1.75rem; letter-spacing: .2px; margin: 0 0 4px; }
+header .meta { color: var(--muted); }
+
+/* Cards */
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.kpi { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.card h3 { margin: 0 0 10px; font-size: 1.05rem; color: #fafafa; }
+
+/* Highlight */
+.highlight { border-left: 4px solid var(--warn); background: rgba(245, 158, 11, 0.08); }
+.risk { font-size: 2.2rem; font-weight: 800; color: var(--accent-2); }
+
+/* Tables */
+table.compact { width: 100%; border-collapse: collapse; }
+.compact th, .compact td { border-bottom: 1px solid var(--panel-border); padding: 10px 8px; }
+.compact th { color: var(--muted); font-weight: 600; letter-spacing: .2px; }
+.right { text-align: right; }
+
+/* Lists */
+ol.flagged { padding-left: 18px; }
+.badge { display: inline-block; background: rgba(139, 92, 246, .15); color: #e9d5ff; border: 1px solid rgba(139, 92, 246, .45); border-radius: 999px; padding: 2px 10px; margin-right: 8px; font-size: .78rem; }
+
+/* Footer */
+footer { margin-top: 40px; color: var(--muted); font-size: .95rem; }
+
+/* Stronger specificity to gently override inline defaults */
+body .card h3 { color: #e5e7eb; }
+body table.compact tr:hover td { background: rgba(255,255,255,0.025); }

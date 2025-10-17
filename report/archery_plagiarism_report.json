@@ -1,0 +1,28 @@
+{
+  "document_title": "1 2 3 4 5 6 7",
+  "file_name": "Adaptive_Power_Optimization_for_Multi_Target_Archery_Simulation (6) (1).pdf",
+  "stats": {
+    "page_count": 7,
+    "word_count": 7,
+    "unique_word_count": 7,
+    "type_token_ratio": 1.0,
+    "sentence_count": 1,
+    "average_words_per_sentence": 7.0
+  },
+  "citations": {
+    "total_citations_detected": 0,
+    "bracket_number_citations": 0,
+    "author_year_citations": 0,
+    "url_like_citations": 0,
+    "references_section_present": false
+  },
+  "top_trigrams": [],
+  "top_fivegrams": [],
+  "flagged_sentences": [],
+  "long_quotes": [],
+  "internal_similarity_risk_0_100": 15,
+  "notes": [
+    "No References/Bibliography section detected.",
+    "No inline citation patterns detected."
+  ]
+}
