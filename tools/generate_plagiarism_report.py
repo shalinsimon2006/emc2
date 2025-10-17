@@ -5,6 +5,8 @@ import json
 import math
 import os
 import re
+import io
+import shutil
 from collections import Counter
 from dataclasses import dataclass, asdict
 from typing import List, Dict, Tuple, Optional
@@ -13,6 +15,24 @@ try:
     from pypdf import PdfReader
 except Exception as e:  # pragma: no cover
     PdfReader = None
+
+# Optional extractors
+try:  # PyMuPDF
+    import fitz  # type: ignore
+except Exception:
+    fitz = None  # type: ignore
+
+try:  # pdfminer
+    from pdfminer.high_level import extract_text as pdfminer_extract_text  # type: ignore
+except Exception:
+    pdfminer_extract_text = None  # type: ignore
+
+try:  # OCR
+    import pytesseract  # type: ignore
+    from PIL import Image  # type: ignore
+except Exception:
+    pytesseract = None  # type: ignore
+    Image = None  # type: ignore
 
 
 @dataclass
@@ -67,21 +87,104 @@ class AnalysisResult:
     notes: List[str]
 
 
-def extract_text_from_pdf(pdf_path: str) -> Tuple[str, int]:
-    if PdfReader is None:
-        raise RuntimeError("pypdf is not available; install it to extract text")
-    reader = PdfReader(pdf_path)
-    pages_text: List[str] = []
-    for page in reader.pages:
+def _normalize_whitespace(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def extract_text_multistrategy_with_notes(pdf_path: str) -> Tuple[str, int, List[str]]:
+    notes: List[str] = []
+    best_text = ""
+    page_count = 0
+
+    # Strategy 1: PyMuPDF
+    if fitz is not None:
         try:
-            page_text = page.extract_text() or ""
+            doc = fitz.open(pdf_path)  # type: ignore
+            page_count = doc.page_count
+            muj_texts: List[str] = []
+            total_images = 0
+            for pg in doc:
+                try:
+                    muj_texts.append(pg.get_text("text") or "")
+                except Exception:
+                    muj_texts.append("")
+                try:
+                    total_images += len(pg.get_images(full=True))
+                except Exception:
+                    pass
+            t = _normalize_whitespace("\n".join(muj_texts))
+            if len(t) > len(best_text):
+                best_text = t
+            notes.append("Used PyMuPDF text extraction")
+            if total_images > 0:
+                notes.append(f"Document contains images on pages (count≈{total_images}); may be scanned")
         except Exception:
-            page_text = ""
-        pages_text.append(page_text)
-    page_count = len(reader.pages)
-    full_text = "\n".join(pages_text)
-    normalized = re.sub(r"\s+", " ", full_text).strip()
-    return normalized, page_count
+            pass
+
+    # Strategy 2: pdfminer.six
+    if pdfminer_extract_text is not None:
+        try:
+            t = pdfminer_extract_text(pdf_path) or ""
+            t = _normalize_whitespace(t)
+            if len(t) > len(best_text):
+                best_text = t
+            notes.append("Used pdfminer text extraction")
+        except Exception:
+            pass
+
+    # Strategy 3: pypdf
+    if PdfReader is not None:
+        try:
+            reader = PdfReader(pdf_path)
+            if page_count == 0:
+                page_count = len(reader.pages)
+            parts: List[str] = []
+            for page in reader.pages:
+                try:
+                    parts.append(page.extract_text() or "")
+                except Exception:
+                    parts.append("")
+            t = _normalize_whitespace("\n".join(parts))
+            if len(t) > len(best_text):
+                best_text = t
+            notes.append("Used pypdf text extraction")
+        except Exception:
+            pass
+
+    # OCR fallback if text still minimal
+    words = re.findall(r"[A-Za-z0-9][A-Za-z0-9\-']*", best_text)
+    tesseract_bin = shutil.which("tesseract")
+    if len(words) < 50 and fitz is not None and pytesseract is not None and Image is not None and tesseract_bin:
+        try:
+            doc = fitz.open(pdf_path)  # type: ignore
+            if page_count == 0:
+                page_count = doc.page_count
+            ocr_texts: List[str] = []
+            for pg in doc:
+                try:
+                    pix = pg.get_pixmap(dpi=300)
+                    img_bytes = pix.tobytes("png")
+                    img = Image.open(io.BytesIO(img_bytes))  # type: ignore
+                    ocr_texts.append(pytesseract.image_to_string(img))  # type: ignore
+                except Exception:
+                    ocr_texts.append("")
+            t = _normalize_whitespace("\n".join(ocr_texts))
+            if len(t) > len(best_text):
+                best_text = t
+                notes.append("Used OCR (Tesseract) due to low extractable text")
+        except Exception:
+            notes.append("OCR attempted but failed; output may be partial")
+    elif len(words) < 50:
+        if not tesseract_bin:
+            notes.append("OCR not available (tesseract not installed); output may be partial")
+        else:
+            notes.append("OCR prerequisites missing; output may be partial")
+
+    if page_count == 0:
+        # Last-resort guess
+        page_count = 0
+
+    return best_text, page_count, notes
 
 
 def split_into_sentences(text: str) -> List[str]:
@@ -351,7 +454,7 @@ def render_html(result: AnalysisResult, stylesheet_href: Optional[str]) -> str:
 
 
 def analyze(pdf_path: str, stylesheet_href: Optional[str]) -> AnalysisResult:
-    text, page_count = extract_text_from_pdf(pdf_path)
+    text, page_count, extraction_notes = extract_text_multistrategy_with_notes(pdf_path)
     stats, sentences, words = compute_stats(text, page_count)
 
     citations = detect_citations(text, sentences)
@@ -373,7 +476,7 @@ def analyze(pdf_path: str, stylesheet_href: Optional[str]) -> AnalysisResult:
     if not title_guess:
         title_guess = (" ".join(words[:12])).title() if words else "Untitled"
 
-    notes: List[str] = []
+    notes: List[str] = list(extraction_notes)
     if stats.average_words_per_sentence > 30:
         notes.append("Unusually long average sentence length; may warrant closer review.")
     if not citations.references_section_present:

@@ -22,6 +22,11 @@
   "long_quotes": [],
   "internal_similarity_risk_0_100": 15,
   "notes": [
+    "Used PyMuPDF text extraction",
+    "Document contains images on pages (count≈7); may be scanned",
+    "Used pdfminer text extraction",
+    "Used pypdf text extraction",
+    "OCR not available (tesseract not installed); output may be partial",
     "No References/Bibliography section detected.",
     "No inline citation patterns detected."
   ]
