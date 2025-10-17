@@ -385,6 +385,129 @@ def write_html_report(output_dir: str, docs: List[Document], pairs: List[PairRes
     return out_path
 
 
+def write_pdf_report(
+    output_dir: str,
+    docs: List[Document],
+    pairs: List[PairResult],
+    threshold: float,
+    max_pairs: int = 200,
+) -> str:
+    try:
+        from reportlab.pdfgen import canvas as rl_canvas
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.units import mm
+        from reportlab.pdfbase.pdfmetrics import stringWidth
+    except Exception as exc:
+        raise RuntimeError(
+            "ReportLab is required for PDF output. Install with: pip install reportlab"
+        ) from exc
+
+    ensure_dir(output_dir)
+    out_path = os.path.join(output_dir, "report.pdf")
+
+    page_width, page_height = A4
+    margin_left = 20 * mm
+    margin_right = 20 * mm
+    margin_top = 22 * mm
+    margin_bottom = 18 * mm
+    text_leading = 13
+    title_leading = 18
+
+    c = rl_canvas.Canvas(out_path, pagesize=A4)
+    y = page_height - margin_top
+
+    def new_page():
+        nonlocal y
+        c.showPage()
+        y = page_height - margin_top
+
+    def space(h: int = text_leading):
+        nonlocal y
+        y -= h
+        if y < margin_bottom:
+            new_page()
+
+    def draw_text(line: str, font: str = "Helvetica", size: int = 10):
+        nonlocal y
+        max_width = page_width - margin_left - margin_right
+        c.setFont(font, size)
+        # Simple word wrap by measuring string width
+        words = line.split(" ")
+        current = ""
+        for w in words:
+            candidate = (current + (" " if current else "") + w)
+            if stringWidth(candidate, font, size) <= max_width:
+                current = candidate
+            else:
+                c.drawString(margin_left, y, current)
+                y -= text_leading
+                if y < margin_bottom:
+                    new_page()
+                current = w
+        if current:
+            c.drawString(margin_left, y, current)
+            y -= text_leading
+            if y < margin_bottom:
+                new_page()
+
+    # Title
+    c.setTitle("Plagiarism Report")
+    c.setAuthor("plagiarism_report.py")
+    c.setSubject("Similarity analysis report")
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(margin_left, y, "Plagiarism Report")
+    y -= title_leading
+    c.setFont("Helvetica", 9)
+    meta = f"Generated at {dt.datetime.utcnow().isoformat()}Z · {len(docs)} files · threshold {threshold:.2f}"
+    c.drawString(margin_left, y, meta)
+    y -= title_leading
+
+    # Files section
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(margin_left, y, "Files")
+    y -= title_leading
+    root = os.path.commonpath([d.path for d in docs]) if docs else os.getcwd()
+    if not docs:
+        draw_text("(no files)")
+    else:
+        for d in docs:
+            rel = os.path.relpath(d.path, start=root)
+            draw_text(f"{rel} — tokens {len(d.tokens):,}, n-grams {len(d.ngrams):,}")
+    space(title_leading // 2)
+
+    # Pairs section
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(margin_left, y, "Similarity Pairs (≥ threshold)")
+    y -= title_leading
+    c.setFont("Helvetica", 9)
+    draw_text("Sorted by highest combined score (max of cosine, jaccard)")
+    space(text_leading)
+
+    shown = 0
+    for p in pairs:
+        if p.combined_score < threshold:
+            continue
+        if shown >= max_pairs:
+            break
+        name_a = os.path.relpath(p.file_a, start=root)
+        name_b = os.path.relpath(p.file_b, start=root)
+        draw_text(f"{name_a}  vs  {name_b}")
+        draw_text(f"cosine {p.cosine:.3f}  ·  jaccard {p.jaccard:.3f}  ·  combined {p.combined_score:.3f}")
+        if p.overlap_ngrams:
+            draw_text("overlap n-grams: " + "; ".join(p.overlap_ngrams))
+        if p.overlap_tokens:
+            toks = ", ".join([f"{t}×{c}" for t, c in p.overlap_tokens])
+            draw_text("common tokens: " + toks)
+        space(title_leading // 2)
+        shown += 1
+
+    if shown == 0:
+        draw_text("(no pairs ≥ threshold)")
+
+    c.save()
+    return out_path
+
+
 def main(argv: List[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Generate a plagiarism similarity report for text files")
     parser.add_argument("--input", required=False, default="samples", help="Input directory containing text files")
@@ -396,6 +519,8 @@ def main(argv: List[str] | None = None) -> int:
     parser.add_argument("--top_k_tokens", type=int, default=8, help="Number of top common tokens to show")
     parser.add_argument("--no_json", action="store_true", help="Do not write JSON report")
     parser.add_argument("--no_html", action="store_true", help="Do not write HTML report")
+    parser.add_argument("--pdf", action="store_true", help="Also write PDF report")
+    parser.add_argument("--pdf_max_pairs", type=int, default=200, help="Maximum number of pairs to include in PDF")
 
     args = parser.parse_args(argv)
 
@@ -421,6 +546,12 @@ def main(argv: List[str] | None = None) -> int:
     if not args.no_html:
         html_path = write_html_report(output_dir, docs, pairs, threshold=args.threshold)
         print(f"Wrote HTML report: {html_path}")
+    if args.pdf:
+        try:
+            pdf_path = write_pdf_report(output_dir, docs, pairs, threshold=args.threshold, max_pairs=args.pdf_max_pairs)
+            print(f"Wrote PDF report: {pdf_path}")
+        except RuntimeError as e:
+            print(str(e), file=sys.stderr)
 
     print(f"Analyzed {len(docs)} files, produced {len(pairs)} pair results.")
     return 0
